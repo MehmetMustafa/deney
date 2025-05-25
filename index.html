@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>❤️ Sürprizli Evet</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: linear-gradient(135deg, #cffafe 0%, #bfdbfe 100%);
+      transition: background 0.5s ease;
+      font-family: 'Arial', sans-serif;
+    }
+
+    body.changed {
+      background: linear-gradient(135deg, #ffafcc 0%, #a2d2ff 100%);
+    }
+
+    #noButton {
+      position: fixed;
+      transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      z-index: 5;
+    }
+
+    #heart {
+      position: fixed;
+      font-size: 5rem;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      opacity: 0;
+      z-index: 50;
+      animation: heartPopExtended 2s ease forwards;
+      display: none;
+    }
+
+    #heart.visible {
+      display: block;
+    }
+
+    #photo {
+      position: fixed;
+      top: 60%;
+      left: 50%;
+      transform: translate(-50%, 20px);
+      width: 300px;
+      border-radius: 1.5rem;
+      box-shadow: 0 6px 25px rgba(0,0,0,0.3);
+      opacity: 0;
+      transition: all 0.5s ease;
+      display: block;
+      z-index: 40;
+    }
+
+    #photo.visible {
+      transform: translate(-50%, 0);
+      opacity: 1;
+    }
+
+    #flashOverlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      opacity: 0.8;
+      z-index: 100;
+      transition: opacity 0.3s ease;
+    }
+
+    #congratsMessage {
+      position: fixed;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 105, 180, 0.9);
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 1rem;
+      font-size: 2rem;
+      font-weight: bold;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      z-index: 60;
+      display: none;
+    }
+
+    #congratsMessage.visible {
+      display: block;
+      opacity: 1;
+    }
+
+    @keyframes heartPopExtended {
+      0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+      40% { transform: translate(-50%, -50%) scale(1.8); opacity: 1; }
+      70% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.8; }
+      100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
+    }
+
+    @media (max-width: 640px) {
+      #photo { width: 200px; }
+      #heart { font-size: 3rem; }
+      h1 { font-size: 1.25rem; }
+      #congratsMessage { font-size: 1.5rem; padding: 0.75rem 1.5rem; }
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center h-screen relative">
+  <div class="text-center bg-white p-6 rounded-xl shadow-2xl space-y-4 z-20 max-w-md mx-4">
+    <h1 class="text-xl font-bold text-gray-800 md:text-2xl">?</h1>
+    <div class="flex justify-center space-x-6 mt-4">
+      <button id="yesButton" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full text-lg font-semibold z-30 transition-colors duration-300">
+        Evet
+      </button>
+      <button id="noButton" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-full text-lg font-semibold transition-colors duration-300">
+        Hayır
+      </button>
+    </div>
+    <p id="message" class="text-gray-600 text-sm mt-2 hidden">Zaten 'Evet' dedin, artık bu bir sonsuzluk! ❤️</p>
+  </div>
+  <div id="heart">❤️</div>
+  <img id="photo" src="teşekkür.jpg" alt="Teşekkür Fotoğrafı">
+  <audio id="backgroundMusic" src="romantic.mp3" loop style="display:none;"></audio>
+  <div id="flashOverlay"></div>
+  <div id="congratsMessage">Tebrikler!</div>
+
+  <script>
+    const noBtn = document.getElementById('noButton');
+    const yesBtn = document.getElementById('yesButton');
+    const heart = document.getElementById('heart');
+    const photo = document.getElementById('photo');
+    const message = document.getElementById('message');
+    const music = document.getElementById('backgroundMusic');
+    const flashOverlay = document.getElementById('flashOverlay');
+    const congratsMessage = document.getElementById('congratsMessage');
+    let isYesClicked = false;
+
+    function moveNoButton() {
+      const maxX = window.innerWidth - noBtn.offsetWidth - 10;
+      const maxY = window.innerHeight - noBtn.offsetHeight - 10;
+      const randX = Math.max(0, Math.min(Math.random() * maxX, maxX));
+      const randY = Math.max(0, Math.min(Math.random() * maxY, maxY));
+      noBtn.style.left = `${randX}px`;
+      noBtn.style.top = `${randY}px`;
+    }
+
+    function launchConfetti() {
+      confetti({ particleCount: 200, spread: 90, angle: 60, origin: { y: 0.6 } });
+      confetti({ particleCount: 200, spread: 90, angle: 120, origin: { y: 0.6 } });
+    }
+
+    noBtn.addEventListener('mouseenter', moveNoButton);
+    noBtn.addEventListener('touchstart', (e) => { e.preventDefault(); moveNoButton(); });
+
+    yesBtn.addEventListener('click', () => {
+      if (!isYesClicked) {
+        isYesClicked = true;
+        yesBtn.disabled = false;
+        yesBtn.classList.remove('hover:bg-green-700');
+        yesBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+        const newHeart = heart.cloneNode(true);
+        heart.parentNode.replaceChild(newHeart, heart);
+        newHeart.classList.add('visible');
+        newHeart.style.animation = 'heartPopExtended 2s ease forwards';
+
+        photo.classList.add('visible');
+        flashOverlay.style.display = 'block';
+        setTimeout(() => flashOverlay.style.display = 'none', 500);
+        music.play();
+        launchConfetti();
+
+        // Arka planı değiştir
+        document.body.classList.add('changed');
+
+        // Tebrik mesajını göster
+        congratsMessage.classList.add('visible');
+        setTimeout(() => congratsMessage.classList.remove('visible'), 3000);
+      } else {
+        message.classList.remove('hidden');
+        launchConfetti();
+      }
+    });
+
+    window.onload = () => {
+      noBtn.style.left = '60%';
+      noBtn.style.top = '70%';
+    };
+
+    window.addEventListener('resize', () => {
+      const maxX = window.innerWidth - noBtn.offsetWidth - 10;
+      const maxY = window.innerHeight - noBtn.offsetHeight - 10;
+      noBtn.style.left = `${Math.min(parseFloat(noBtn.style.left), maxX)}px`;
+      noBtn.style.top = `${Math.min(parseFloat(noBtn.style.top), maxY)}px`;
+    });
+  </script>
+</body>
+</html>
